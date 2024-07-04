@@ -18,6 +18,64 @@ button{
 #navbar{
   margin: 5px;
 }
+
+.data-table{
+  width: 100%;
+  margin: 10px;
+  font-size: 1.5rem;
+  
+}
+
+img{
+  width: 30px;
+  height: 30px;
+}
+
+
+.positive{
+  color: green;
+}
+.negative{
+  color: red;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*body{
+  background-color: black;
+  color: white;
+}
+
+
+#SearchBar{
+  width: 65vw;
+  height: 5vh;
+
+}
+
+button{
+  width: 15vw;
+  height: 6vh;
+  margin-inline: 5px;
+}
+#navbar{
+  margin: 5px;
+}
 .data-table{
   width: 100%;
   margin: 10px;
@@ -47,4 +105,4 @@ img{
 
 .percen{
   color: green;
-}
+}*/

@@ -1,80 +1,89 @@
-const url = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false";
 
-let table = document.querySelector(".data-table");
-let heroSection = document.getElementById("hero");
 
-window.onload = async () => {
-  try {
-    let response = await fetch(url);
-    const mainData = await response.json();
-    displayData(mainData, table);
-  } catch (error) {
-    console.error("Error fetching data on load:", error);
-  }
-};
+const url="https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false";
 
-let marketButton = document.getElementById("btn-market");
-marketButton.addEventListener("click", async (eve) => {
-  eve.preventDefault();
-  await sortAndDisplayData('market_cap');
-});
+const table = document.querySelector(".data-table");
+const marketButton = document.getElementById("btn-market");
+const percentageButton = document.getElementById("btn-percent");
+// searchbar not sure, correct next line.
+const searchBar =document.getElementById('SearchBar')
+let mainData;
+window.onload = ()=>{
+    fetchAndDisplayMainTable();
+}
 
-let percentageButton = document.getElementById("btn-percent");
-percentageButton.addEventListener("click", async (eve) => {
-  eve.preventDefault();
-  await sortAndDisplayData('price_change_percentage_24h');
-});
-
-async function sortAndDisplayData(sortBy) {
-  if (table) {
-    table.remove();
-  }
-
-  if (document.querySelector(".new-data-table")) {
-    document.querySelector(".new-data-table").remove();
-  }
-  if (document.querySelector(".new-data-table2")) {
-    document.querySelector(".new-data-table2").remove();
-  }
-
-  let newTable = document.createElement("table");
-  newTable.setAttribute("border", 1);
-  newTable.className = "new-data-table";
-  let response = await fetch(url);
-  const mainData = await response.json();
-
-  let sortedData = mainData.sort((a, b) => {
-    if (sortBy === 'market_cap') {
-      return b.market_cap - a.market_cap;
-    } else if (sortBy === 'price_change_percentage_24h') {
-      return Math.abs(b.price_change_percentage_24h) - Math.abs(a.price_change_percentage_24h);
+// function for fetching data
+async function fetchAndDisplayMainTable(){
+    try{
+        const response= await fetch(url);
+        mainData= await response.json();
+       // console.log(mainData);
+        //for displaying mainTable
+         displayData(mainData);
     }
-  });
-
-  displayData(sortedData, newTable);
-  heroSection.append(newTable);
+    catch(error){
+        console.log(error);
+    }
 }
 
-function displayData(dataArray, tableElement) {
-  dataArray.forEach((data) => {
-    let strPercen = String(data.price_change_percentage_24h);
-    let filteredPercen = strPercen.replace("-", "");
-
-    let row = document.createElement("tr");
-    row.innerHTML = `
-      <td><img src="${data.image}" alt="img">${data.name}</td>
-      <td>${data.symbol}</td>
-      <td>$ ${data.current_price}</td>
-      <td>$ ${data.total_volume}</td>
-      <td class="percen">${filteredPercen}%</td>
-      <td>$ ${data.market_cap}</td>
+// function for displaying table.
+function displayData(dataArray){ // s used second parameter
+    // for negative green display check later - done
+    table.innerHTML="";
+    dataArray.forEach((data)=>{
+    const row=document.createElement('tr');
+if(!data.price_change_percentage_24h.toString().includes('-')){
+    row.innerHTML=`
+    <td><img src="${data.image}" alt="img">${data.name}</td>
+    <td>${data.symbol.toUpperCase()}</td>
+    <td>$${data.current_price}</td>
+    <td>$${data.total_volume}</td>
+    <td class="positive">${data.price_change_percentage_24h}%</td>
+    <td>Mkt Cap : $${data.market_cap}</td>
     `;
-    tableElement.append(row);
-  });
+}
+else {
+    row.innerHTML=`
+    <td><img src="${data.image}" alt="img">${data.name}</td>
+     <td>${data.symbol.toUpperCase()}</td>
+    <td>$${data.current_price}</td>
+    <td>$${data.total_volume}</td>
+    <td class="negative">${data.price_change_percentage_24h}%</td>
+    <td>Mkt Cap : $${data.market_cap}</td>
+    `;
+}
+   
+    table.append(row);
+    });
+    
+
 }
 
+//sort by mktcap
+marketButton.addEventListener('click',()=>{
+console.log('clicked marketbutton')
+//console.log(mainData);
+let tempData=mainData;
+let sortedData=tempData.sort((a,b)=>{
+    return a.market_cap-b.market_cap;
+})
+displayData(sortedData);
+})
 
-function debounce(fn, delay) {
+//sort by percentage
+percentageButton.addEventListener('click',()=>{
+    //console.log('clicked percentageButton')
+    //console.log(mainData);
+    let tempData=mainData;
+    let sortedData=tempData.sort((a,b)=>{
+        return a.price_change_percentage_24h-b.price_change_percentage_24h;
+    })
+    displayData(sortedData);
+    })
+
+
+    //debouncing function
+function debounce(fn, delay=300) {
   let timer;
   return function() {
     let context = this;
@@ -86,49 +95,29 @@ function debounce(fn, delay) {
   };
 }
 
-async function fetchData(event) {
-  console.log("Fetching data for:", event.target.value);
-  try {
-    const response = await fetch(url);
-    const mainData = await response.json();
-    let searchedData = mainData.filter((el) => {
-      return el.name.toLowerCase().includes(event.target.value.toLowerCase());
-    });
-    let newTable = document.createElement("table");
-    newTable.setAttribute("caption","Seached Table")
-    newTable.setAttribute("border", 1); // Add border to make the table visible
-    newTable.className = "search-results-table"; // Add a class for styling if needed
-    
-    displayData(searchedData, newTable);
 
-    // Clear previous search results if any
-    const previousTable = document.querySelector(".search-results-table");
-    if (previousTable) {
-      previousTable.remove();
-    }
-    const newDataTable = document.querySelector(".new-data-table");
-    if (newDataTable) {
-      newDataTable.remove();
-    }
-    const newDataTable2 = document.querySelector(".new-data-table2");
-    if (newDataTable2) {
-      newDataTable2.remove();
-    }
-    if (table) {
-      table.remove();
-    }    // Append the new table to the hero section or any other desired element
-    heroSection.append(newTable);
-
-
-
-
-  } catch (error) {
-    console.error("Error fetching data:", error);
-  }
-  
-}
-
-let displaySearch = debounce(fetchData, 300);
-const searchBar = document.getElementById("SearchBar");
+ //search event calling
+let displaySearch = debounce(searchData, 300);
 searchBar.addEventListener("keyup", displaySearch);
+
+
+//search function //triple check
+function searchData(event){
+    //console.log("Fetching data for: ",event.target.value);
+    //console.log("searcing in",mainData);
+    let tempData=mainData;
+    try{
+        let filteredData=tempData.filter((el)=>{
+            //logic for filtering
+            return el.name.toLowerCase().includes(event.target.value.toLowerCase()) || el.symbol.toLowerCase().includes(event.target.value.toLowerCase()) ;
+        });
+        //console.log(filteredData);
+        displayData(filteredData)
+    } catch (error) {
+        console.error("Error fetching data for searched value:", error);
+      }
+}   
+
+
+
 
