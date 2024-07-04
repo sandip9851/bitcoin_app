@@ -1,12 +1,8 @@
-
-
 const url="https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false";
-
 const table = document.querySelector(".data-table");
 const marketButton = document.getElementById("btn-market");
 const percentageButton = document.getElementById("btn-percent");
-// searchbar not sure, correct next line.
-const searchBar =document.getElementById('SearchBar')
+const searchBar=document.getElementById('SearchBar');
 let mainData;
 window.onload = ()=>{
     fetchAndDisplayMainTable();
@@ -17,12 +13,12 @@ async function fetchAndDisplayMainTable(){
     try{
         const response= await fetch(url);
         mainData= await response.json();
-       // console.log(mainData);
+        console.log("fetched mainData:",mainData);
         //for displaying mainTable
          displayData(mainData);
     }
     catch(error){
-        console.log(error);
+        console.error("Error while fetching main data", error);
     }
 }
 
@@ -62,7 +58,7 @@ else {
 //sort by mktcap
 marketButton.addEventListener('click',()=>{
 console.log('clicked marketbutton')
-//console.log(mainData);
+console.log(mainData);
 let tempData=mainData;
 let sortedData=tempData.sort((a,b)=>{
     return a.market_cap-b.market_cap;
@@ -72,52 +68,51 @@ displayData(sortedData);
 
 //sort by percentage
 percentageButton.addEventListener('click',()=>{
-    //console.log('clicked percentageButton')
-    //console.log(mainData);
+    console.log('clicked percentageButton')
+    console.log(mainData);
     let tempData=mainData;
     let sortedData=tempData.sort((a,b)=>{
         return a.price_change_percentage_24h-b.price_change_percentage_24h;
     })
     displayData(sortedData);
     })
+//-------------------------------------------------//
+// till here program is running okay
 
 
-    //debouncing function
+//debouncing function
 function debounce(fn, delay=300) {
-  let timer;
-  return function() {
-    let context = this;
-    let args = arguments;
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      fn.apply(context, args);
-    }, delay);
-  };
-}
+    let timer;
+    return function() {
+      let context = this;
+      let args = arguments;
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        fn.apply(context, args);
+      }, delay);
+    };
+  }
+  
 
 
- //search event calling
+//search event calling
 let displaySearch = debounce(searchData, 300);
 searchBar.addEventListener("keyup", displaySearch);
 
 
 //search function //triple check
 function searchData(event){
-    //console.log("Fetching data for: ",event.target.value);
-    //console.log("searcing in",mainData);
+    console.log("Fetching data for: ",event.target.value);
+    console.log("searcing in",mainData);
     let tempData=mainData;
     try{
         let filteredData=tempData.filter((el)=>{
             //logic for filtering
             return el.name.toLowerCase().includes(event.target.value.toLowerCase()) || el.symbol.toLowerCase().includes(event.target.value.toLowerCase()) ;
         });
-        //console.log(filteredData);
+        console.log(filteredData);
         displayData(filteredData)
     } catch (error) {
         console.error("Error fetching data for searched value:", error);
       }
-}   
-
-
-
-
+}
